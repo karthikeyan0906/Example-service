@@ -3,10 +3,15 @@
 # Directory Structure :
 
 deploy/ansible -> ansible roles and playbooks for installing tools and configuring services . 
+
 deploy/infra   -> cloudformation files splitted into resource speficific files which needs to be stitched together 
+
                   using any python or CF SDK tools since modifying in a single template would be very tedious and difficult
+                  
 deploy/packer.json -> can be used if we follow Image baking process . service AMI can be created from the baked base ami.
+
 src            -> Service files
+
 Jenkinsfile   -> can be used to create a pipeline jobs via groovy scripts instead of creating build jobs manually.
 
 
