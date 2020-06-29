@@ -1,0 +1,124 @@
+---
+
+channels:
+- name: exampleService (Email) ({{newrelic_environment}})
+  type: email
+  email: {{email_address}}
+  include_json_attachment: true
+
+policies:
+  - name: exampleService
+    incident_preference: by_condition_and_entity
+    channels:
+      - exampleService (Email) ({{newrelic_environment}})
+
+    conditions:
+
+      # Application Metrics
+      - name: Error Percentage
+        type: apm_application_metric
+        entities:
+            - exampleService ({{newrelic_environment}})
+        metric: error_percentage
+        warning:
+          operator: greater_than
+          threshold: 1
+          time_function: for_at_least
+          duration: ten_minutes
+        critical:
+          operator: greater_than
+          threshold: 5
+          time_function: for_at_least
+          duration: five_minutes
+
+      - name: Apdex
+        type: apm_application_metric
+        entities:
+            - exampleService ({{newrelic_environment}})
+        metric: apdex
+        warning:
+          operator: less_than
+          threshold: 0.85
+          time_function: for_at_least
+          duration: ten_minutes
+        critical:
+          operator: less_than
+          threshold: 0.7
+          time_function: for_at_least
+          duration: five_minutes
+
+      # Server Metrics
+      - name: CPU Percentage
+        type: nrql
+        query: "SELECT average(cpuUserPercent + cpuSystemPercent + cpuIOWaitPercent) from SystemSample where ec2Tag_role = '{{role}}' and awsRegion = '{{region}}'"
+        since_value: three_minutes
+        value_function: single_value
+        warning:
+          operator: greater_than
+          threshold: 65
+          time_function: for_at_least
+          duration: thirty_minutes
+        critical:
+          operator: greater_than
+          threshold: 80
+          time_function: for_at_least
+          duration: fifteen_minutes
+
+      - name: Server Memory Percentage
+        type: infra_metric
+        event_type: SystemSample
+        select_value: (memoryUsedBytes / memoryTotalBytes) * 100
+        comparison: above
+        warning_threshold:
+          value: 70
+          time_function: all
+          duration_minutes: 10
+        critical_threshold:
+          value: 90
+          time_function: all
+          duration_minutes: 5
+
+      - name: Disk IO Percentage
+        type: infra_metric
+        event_type: StorageSample
+        select_value: totalUtilizationPercent
+        comparison: above
+        warning_threshold:
+          value: 70
+          time_function: all
+          duration_minutes: 30
+        critical_threshold:
+          value: 90
+          time_function: all
+          duration_minutes: 15
+
+      - name: Fullest Disk Percentage
+        type: infra_metric
+        event_type: StorageSample
+        select_value: diskUsedPercent
+        comparison: above
+        warning_threshold:
+          value: 70
+          time_function: all
+          duration_minutes: 10
+        critical_threshold:
+          value: 90
+          time_function: all
+          duration_minutes: 5
+
+      - name: JVM heap memory usage (High)
+        type: apm_jvm_metric
+        entities:
+          - exampleService ({{newrelic_environment}})
+        violation_close_timer: twenty_four_hours
+        metric: heap_memory_usage
+        warning:
+          operator: greater_than
+          threshold: 70
+          time_function: for_at_least
+          duration: five_minutes
+        critical:
+          operator: greater_than
+          threshold: 80
+          time_function: for_at_least
+          duration: five_minutes

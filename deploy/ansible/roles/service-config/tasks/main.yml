@@ -1,0 +1,17 @@
+---
+# tasks file for service
+
+- name: create non-root user
+  user: name=exampleService comment="example service user"
+
+- name: change permissions on log dir
+  file: path=/var/log/inin owner=exampleService group=exampleService mode=1755 state=directory recurse=yes
+
+- name: copy jar to example service home
+  command: mv /home/ec2-user/exampleService.jar /home/exampleService/exampleService.jar
+
+- name: set permissions on jar
+  file: path=/home/exampleService/exampleService.jar owner=exampleService group=exampleService mode=0755
+
+- name: supervisor example service ini
+  template: src=exampleService-systemd.service.j2 dest=/etc/systemd/system/exampleService.service mode=0744

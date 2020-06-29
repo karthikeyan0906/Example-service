@@ -1,0 +1,16 @@
+{
+  "Resources": {
+    "InstanceSecurityGroup" : {
+      "Properties" : {
+        "SecurityGroupIngress" : [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "8080",
+            "ToPort": "8080",
+            "SourceSecurityGroupId": {"Ref": "corporate or VPN SG"}
+          }
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "Resources": {
+    "ELB": {
+      "Properties": {
+        "Listeners": [
+          {
+            "LoadBalancerPort": "443",
+            "Protocol": "HTTPS",
+            "InstancePort": "8443",
+            "PolicyNames": [
+              { "Fn::Join" : [ "-", [ "SSLNegotiationPolicy", "exampleService", { "Ref": "ELBSecurityPolicy" } ] ] }
+            ],
+            "InstanceProtocol": "HTTPS",
+            "SSLCertificateId": { "Ref": "SSLREGION" }
+          }
+        ],
+        "Policies" : [
+          {
+            "PolicyName" : { "Fn::Join" : [ "-", [ "SSLNegotiationPolicy", "exampleService", { "Ref": "ELBSecurityPolicy" } ] ] },
+            "PolicyType" : "SSLNegotiationPolicyType",
+            "Attributes" : [
+              {
+                "Name"  : "Reference-Security-Policy",
+                "Value" : { "Ref": "ELBSecurityPolicy" }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,15 @@
+[Unit]
+Description=exampleService
+After=network.target
+
+[Service]
+Type=simple
+User=exampleService
+WorkingDirectory=/home/exampleService
+ExecStart=/usr/bin/java -jar -Denvironment={{ env | default('dev') }} -DLOG_DIR=/var/log/ -javaagent:/opt/newrelicjava/newrelic.jar -Dnewrelic.environment={{ env | default('dev') }} -Dnewrelic.config.error_collector.ignore_status_codes=403,404 -Dcloudfront.logparser.bufferSize=3072 -XX:+UseG1GC -XX:InitiatingHeapOccupancyPercent=70 -XX:+UseStringDeduplication -Xms1g -Xmx1g -Xss256k /home/exampleService/exampleService.jar
+Restart=on-failure # or always, on-abort, etc
+TimeoutStartSec=60
+KillSignal=SIGTERM
+
+[Install]
+WantedBy=multi-user.target

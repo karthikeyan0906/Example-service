@@ -1,0 +1,9 @@
+---
+  - hosts: localhost
+    sudo: yes
+
+    roles:
+    - service-config
+    - start
+    - { role: ssl_cert, owner: exampleService}
+    - { role: sumologic-sources-configure}    ##or datadog or any other log tool

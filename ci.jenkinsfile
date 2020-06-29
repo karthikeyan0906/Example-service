@@ -1,0 +1,20 @@
+/**
+*  NOTE This file is used for a multiple project Jenkins pipeline job. This job is mainly to verify all the unit-tests, lint, codecoverage type stuff passed.
+*  Idea is to use this build to verify pull-request code is valid and stable.
+*
+**/
+
+@Library('pipeline-library@master')
+
+node('dev_mesos') {
+  final credentialsId = '211a9bc8-96ae-4b0c-b9bf-ad1d4ff53f79'
+
+  checkout scm
+
+  serviceBuild.preBuild(credentialsId)
+
+  withEnv(["ENVIRONMENT=dev"])
+  {
+      serviceBuild.runMavenGoals('clean verify')
+  }
+}

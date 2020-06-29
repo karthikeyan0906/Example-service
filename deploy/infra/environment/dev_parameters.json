@@ -1,0 +1,6 @@
+{
+  "DNSNAME": "exampleService.us-east-1.dev.com",
+  "DynamoModelTables": "dev-exampleService-*",
+  "AutoScaleDynamoModelTable": "dev-exampleService-example-model",
+  "ShouldCreateTable": "true"
+}

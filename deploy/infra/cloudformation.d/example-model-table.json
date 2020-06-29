@@ -1,0 +1,54 @@
+{
+  "Parameters": {
+    "AutoScaleDynamoModelTable": {
+      "Type": "String"
+    },
+    "ShouldCreateTable" : {
+      "Type" : "String",
+      "AllowedValues" : ["true", "false"],
+      "Description" : "If true then the underlying DynamoDB table will be created with the CloudFormation stack."
+    }
+  },
+  "Conditions" : {
+    "CreateDynamoTable": {
+      "Fn::Equals": [
+        {
+          "Ref": "ShouldCreateTable"
+        },
+        "true"
+      ]
+    }
+  },
+  "Resources": {
+    "ExampleServiceDynamoTable": {
+      "Type": "AWS::DynamoDB::Table",
+      "Condition" : "CreateDynamoTable",
+      "Properties": {
+        "TableName": {
+          "Ref": "AutoScaleDynamoModelTable"
+        },
+        "BillingMode": "PAY_PER_REQUEST",
+        "AttributeDefinitions": [
+        {
+          "AttributeName": "id",
+          "AttributeType": "S"
+        },
+        {
+          "AttributeName": "organizationId",
+          "AttributeType": "S"
+        }
+        ],
+        "KeySchema": [
+        {
+          "AttributeName": "id",
+          "KeyType": "HASH"
+        },
+        {
+          "AttributeName": "organizationId",
+          "KeyType": "RANGE"
+        }
+        ]
+      }
+    }
+  }
+}

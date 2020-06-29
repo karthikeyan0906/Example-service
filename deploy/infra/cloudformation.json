@@ -1,0 +1,183 @@
+{
+  "Description": "Example Service CloudFormation Stack",
+  "Parameters": {
+    "HEALTHCHECK": {
+      "Type": "String",
+      "Default": "HTTP:8080/health/check"
+    },
+    "ELBSCHEME": {
+      "Default": "internal",
+      "Type": "String",
+      "Description": "Specify if the ELB will be internet facing or internal",
+      "AllowedValues": [
+        "internet-facing",
+        "internal"
+      ]
+    },
+    "DNSNAME": {
+      "Type": "String",
+      "Description": "the is the FQDN of the dns record including the domain name. You must also include the trailing dot."
+    },
+    "OWNER": {
+      "Type": "String",
+      "Description": "Email address of the owner or group owner of this stack",
+      "Default": "Dev-CloudEngageServices@email.com"
+    },
+    "VPCSUBNET": {
+      "Type": "CommaDelimitedList"
+    },
+    "ROLE": {
+      "Type": "String",
+      "Description": "Role associated with this stack",
+      "Default": "exampleService"
+    }
+  },
+  "Resources": {
+    "IAMRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "Path": "/",
+        "Policies": [],
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": ["ec2.amazonaws.com"]
+              },
+              "Action": ["sts:AssumeRole"]
+            }
+          ]
+        }
+      }
+    },
+    "ELB": {
+      "Type": "AWS::ElasticLoadBalancing::LoadBalancer",
+      "Properties": {
+        "Subnets": { "Ref": "VPCSUBNET" },
+        "Scheme": { "Ref": "ELBSCHEME" },
+        "SecurityGroups": [{ "Ref": "ELBSecurityGroup" }],
+        ,
+        "AccessLoggingPolicy": {
+          "S3BucketPrefix": {
+            "Fn::Join": [ "", [ { "Ref": "ENVIRONMENT" }, ".", { "Ref": "ROLE" } ] ]
+          },
+          "EmitInterval": "5",
+          "Enabled": "True",
+          "S3BucketName": { "Ref": "ELBLOGBUCKET" }
+        },
+        "HealthCheck": {
+          "HealthyThreshold": "2",
+          "Interval": "10",
+          "Target": { "Ref": "HEALTHCHECK" },
+          "Timeout": "2",
+          "UnhealthyThreshold": "2"
+        },
+        "Listeners": [
+          {
+            "InstancePort": "8080",
+            "LoadBalancerPort": "80",
+            "Protocol": "HTTP",
+            "InstanceProtocol": "HTTP"
+          }
+        ],
+        "CrossZone": "true"
+      }
+    },
+    "ELBSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "VpcId": { "Ref": "VPCID" },
+        "GroupDescription": "ELB Security Group",
+        "SecurityGroupIngress": [
+          {
+            "ToPort": "80",
+            "IpProtocol": "tcp",
+            "CidrIp": {"Ref": "VpcCidr"},
+            "FromPort": "80"
+          },
+          {
+            "ToPort": "443",
+            "IpProtocol": "tcp",
+            "CidrIp": {"Ref": "VpcCidr"},
+            "FromPort": "443"
+          }
+        ]
+      }
+    },
+    "ELBSecurityGroupEgressHttps": {
+      "Type" : "AWS::EC2::SecurityGroupEgress",
+      "Properties" : {
+        "IpProtocol" : "tcp",
+        "FromPort" : "8443",
+        "ToPort" : "8443",
+        "DestinationSecurityGroupId": {"Ref": "InstanceSecurityGroup"},
+        "GroupId": {"Ref": "ELBSecurityGroup"}
+      }
+    },
+    "ELBSecurityGroupEgressHttp": {
+      "Type" : "AWS::EC2::SecurityGroupEgress",
+      "Properties" : {
+        "IpProtocol" : "tcp",
+        "FromPort" : "8080",
+        "ToPort" : "8080",
+        "DestinationSecurityGroupId": {"Ref": "InstanceSecurityGroup"},
+        "GroupId": {"Ref": "ELBSecurityGroup"}
+      }
+    },
+    "InstanceProfile": {
+      "Type": "AWS::IAM::InstanceProfile",
+      "Properties": {
+        "Path": "/",
+        "Roles": [
+          { "Ref": "IAMRole" }
+        ]
+      }
+    },
+    "DNS": {
+      "Type": "AWS::Route53::RecordSet",
+      "Properties": {
+        "HostedZoneName": { "Ref": "ZONE" },
+        "ResourceRecords": [
+          { "Fn::GetAtt": [ "ELB", "DNSName" ] }
+        ],
+        "Type": "CNAME",
+        "Name": { "Ref": "DNSNAME" },
+        "TTL": "900"
+      }
+    },
+    "InstanceSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "SecurityGroupIngress": [
+          {
+            "ToPort": "8080",
+            "IpProtocol": "tcp",
+            "FromPort": "8080",
+            "SourceSecurityGroupId" : { "Fn::ImportValue" : "jslave-SecurityGroupId"}
+          },
+          {
+            "ToPort": "8080",
+            "IpProtocol": "tcp",
+            "SourceSecurityGroupId": { "Ref": "ELBSecurityGroup" },
+            "FromPort": "8080"
+          },
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "8443",
+            "ToPort": "8443",
+            "SourceSecurityGroupId": { "Ref": "ELBSecurityGroup" }
+          },
+          {
+            "ToPort": "22",
+            "IpProtocol": "tcp",
+            "SourceSecurityGroupId": { "Ref": "bastionsg" },
+            "FromPort": "22"
+          }
+        ],
+        "VpcId": { "Ref": "VPCID" },
+        "GroupDescription": "Instance Security Group"
+      }
+    }
+  }
+}

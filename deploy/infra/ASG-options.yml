@@ -1,0 +1,38 @@
+Type: AWS::AutoScaling::AutoScalingGroup
+Properties:
+  AutoScalingGroupName: my-asg
+  AvailabilityZones:
+    - us-east-1a
+  Cooldown: String
+  DesiredCapacity: 2
+  HealthCheckGracePeriod: 300
+  HealthCheckType: ELB
+  InstanceId: String
+  LaunchConfigurationName: String
+  LaunchTemplate:
+    LaunchTemplateSpecification
+  LifecycleHookSpecificationList:
+    - LifecycleHookSpecification
+  LoadBalancerNames:
+    - String
+  MaxInstanceLifetime: Integer
+  MaxSize: 3
+  MetricsCollection:
+    - MetricsCollection
+  MinSize: 0
+  MixedInstancesPolicy:
+    MixedInstancesPolicy
+  NotificationConfigurations:
+    - NotificationConfiguration
+  PlacementGroup: String
+  ServiceLinkedRoleARN: String
+  Tags:
+    - TagProperty
+  TargetGroupARNs:
+    - String
+  TerminationPolicies:
+    - String
+  VPCZoneIdentifier:
+    - String
+
+

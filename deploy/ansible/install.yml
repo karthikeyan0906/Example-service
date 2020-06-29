@@ -1,0 +1,6 @@
+---
+  - hosts: localhost
+    sudo: yes
+
+    roles:
+    - { role: openjdk-install, java_version: "1.8.0",  jce: yes }

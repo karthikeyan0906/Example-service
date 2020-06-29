@@ -1,0 +1,74 @@
+{
+  "Parameters": {
+    "DynamoModelTables": {
+      "Type": "String",
+      "Description": "Name of DynamoDB Tables for Entities"
+    }
+  },
+  "Resources": {
+    "IAMRole": {
+      "Properties": {
+        "Policies": [
+          {
+            "PolicyName": "DynamoProperties",
+            "PolicyDocument": {
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "dynamodb:BatchGetItem",
+                    "dynamodb:DescribeTable",
+                    "dynamodb:GetItem",
+                    "dynamodb:Query",
+                    "dynamodb:Scan"
+                  ],
+                  "Resource": [
+                    {
+                      "Fn::Join": ["",["arn:aws:dynamodb:",{"Ref": "REGION"},":",{"Ref": "ACCOUNTID"},":table/properties-global"]]
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "PolicyName": "DynamoAppProperties",
+            "PolicyDocument": {
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "dynamodb:BatchGetItem",
+                    "dynamodb:BatchWriteItem",
+                    "dynamodb:CreateTable",
+                    "dynamodb:DeleteItem",
+                    "dynamodb:DescribeTable",
+                    "dynamodb:GetItem",
+                    "dynamodb:ListTables",
+                    "dynamodb:PutItem",
+                    "dynamodb:Query",
+                    "dynamodb:Scan",
+                    "dynamodb:UpdateItem",
+                    "dynamodb:UpdateTable",
+                    "dynamodb:TagResource"
+                  ],
+                  "Resource": [
+                    {
+                      "Fn::Join": ["",["arn:aws:dynamodb:",{"Ref": "REGION"},":",{"Ref": "ACCOUNTID"},":table/",{"Ref": "DynamoModelTables"}]]
+                    },
+                    {
+                      "Fn::Join": ["",["arn:aws:dynamodb:",{"Ref": "REGION"},":",{"Ref": "ACCOUNTID"},":table/","properties-exampleService*"]]
+                    },
+                    {
+                      "Fn::Join": ["",["arn:aws:dynamodb:",{"Ref": "REGION"},":",{"Ref": "ACCOUNTID"},":table/","table-usage-metadata"]]
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  }
+}

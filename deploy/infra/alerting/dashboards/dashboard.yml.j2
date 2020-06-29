@@ -1,0 +1,77 @@
+---
+title: ExampleService ({{newrelic_environment}}) Dashboard
+icon: bar-chart
+filter_event_types:
+- Transaction
+- TransactionError
+filter_attributes:
+- appName
+- name
+- organization
+- request.headers.userAgent
+- userid
+widgets:
+- title: CPU Overview
+  visualization: faceted_line_chart
+  layout:
+    row: 1
+    column: 1
+  nrql: SELECT average(cpuPercent) FROM SystemSample TIMESERIES WHERE ec2Tag_role
+    = 'exampleService' LIMIT 100
+    SINCE 60 minutes ago FACET ec2InstanceId
+- title: Memory Used
+  visualization: faceted_line_chart
+  layout:
+    row: 1
+    column: 2
+  nrql: SELECT average(memoryUsedBytes/memoryTotalBytes*100) FROM SystemSample TIMESERIES
+    WHERE ec2Tag_role = 'exampleService' LIMIT
+    100 SINCE 60 minutes ago FACET ec2InstanceId
+- title: CPU IO Wait
+  visualization: faceted_line_chart
+  layout:
+    row: 1
+    column: 3
+  nrql: SELECT average( cpuIOWaitPercent ) FROM SystemSample TIMESERIES WHERE ec2Tag_role
+    = 'exampleService' LIMIT 100
+    SINCE 60 minutes ago FACET ec2InstanceId
+
+- title: Load Average Five Minute
+  visualization: faceted_line_chart
+  layout:
+    row: 2
+    column: 1
+  nrql: SELECT average( loadAverageFiveMinute ) FROM SystemSample TIMESERIES WHERE
+    ec2Tag_role = 'exampleService' LIMIT
+    100 SINCE 60 minutes ago FACET ec2InstanceId
+
+- title: Network Received Per Sec
+  visualization: faceted_line_chart
+  layout:
+    row: 2
+    column: 2
+  nrql: SELECT average(receiveBytesPerSecond) FROM NetworkSample TIMESERIES WHERE
+    ec2Tag_role = 'exampleService' LIMIT
+    100 SINCE 60 minutes ago FACET ec2InstanceId
+
+- title: Network Tramsit Per Sec
+  visualization: faceted_line_chart
+  layout:
+    row: 2
+    column: 3
+  nrql: SELECT average(transmitBytesPerSecond) FROM NetworkSample TIMESERIES WHERE
+    ec2Tag_role = 'exampleService' LIMIT
+    100 SINCE 60 minutes ago FACET ec2InstanceId
+
+
+- title: Apdex
+  visualization: metric_line_chart
+  layout:
+    row: 3
+    column: 2
+    width: 2
+  entity_type: application
+  entity: exampleService ({{newrelic_environment}})
+  metric: Apdex
+  value_function: score
+  duration_ms: 3600000

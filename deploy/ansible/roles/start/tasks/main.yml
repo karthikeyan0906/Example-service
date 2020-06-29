@@ -1,0 +1,5 @@
+---
+- name: Make sure a example service is running
+  systemd:
+    state: started
+    name: exampleService

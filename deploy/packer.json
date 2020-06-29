@@ -1,0 +1,63 @@
+{
+  "variables": {
+    "role": "{{`SERVICE_ROLE` }}",
+    "owner": "{{`OWNER` }}",
+    "version":"{{`VERSION`}}"
+  },
+  "builders": [
+    {
+      "type": "amazon-ebs",
+      "region": "us-east-1",
+      "source_ami_filter": {
+        "filters": {
+          "tag:baseAmiStatus": "new",
+          "tag:role": "new"
+        },
+        "most_recent": true,
+        "owners": ["aws account_id"]
+      },
+      "instance_type": "t2.small",
+      "ssh_username": "ec2-user",
+      "ami_name": "name",
+      "ssh_timeout": "5m",
+      "iam_instance_profile": "default",
+      "ena_support": true,
+      "sriov_support": true,
+      "subnet_id": "subnet-id",
+      "security_group_id": "sg-id",
+      "ssh_private_ip": true,
+      "run_tags": {
+        "Name": "packer",
+        "role": "packer",
+        "version": "version",
+        "owner": "{{`owner`}}"
+      },
+      "tags": {
+        "Name": "{{`role`}}",
+        "role": "{{`role`}}",
+        "version": "{{`version`}}",
+        "source_ami": "{{SourceAMI}}",
+        "owner":  "{{`owner`}}"
+      }
+    }
+  ],
+  "provisioners": [
+    {
+      "type": "file",
+      "source": "{{template_dir}}/ansible",
+      "destination": "/home/ec2-user"
+    },
+    {
+      "type": "file",
+      "source": "{{template_dir}}/../target/exampleService.jar",
+      "destination":"/home/ec2-user/exampleService.jar"
+    },
+    {
+      "type": "ansible-local",
+      "playbook_file": "{{template_dir}}/ansible/install.yml",
+      "extra_arguments": "--verbose --limit localhost -e 'role={{`role`}} version={{`version`}}'",
+      "inventory_file": "{{template_dir}}/ansible/inv",
+      "playbook_dir": "{{template_dir}}/ansible"
+    }
+  ]
+}
